@@ -19,6 +19,7 @@ const MOCK_LATEST = {
     updownrate: 0.213,
   },
   rate_twd: '31.8520',
+  rate_twd_change: 0.15,
   lme: {
     date: '27.02.2026',
     usd: '9.680,00',

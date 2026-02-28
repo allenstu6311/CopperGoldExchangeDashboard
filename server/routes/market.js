@@ -20,10 +20,35 @@ router.get('/latest', async (req, res) => {
     ])
 
     const unwrap = (r) => (r.status === 'fulfilled' ? r.value : null)
+    const rateTwdValue = unwrap(rate_twd)
+
+    // 台銀 API 不提供漲跌幅，從 Supabase 撈前一筆歷史記錄自行計算
+    // Supabase 失敗時靜默降級為 null，不影響主要回應
+    let rateTwdChange = null
+    if (rateTwdValue) {
+      try {
+        const today = new Date().toISOString().slice(0, 10)
+        const { data: prev } = await supabase
+          .from('daily_prices')
+          .select('rate_twd')
+          .lt('date', today)
+          .order('date', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+
+        if (prev?.rate_twd) {
+          const curr = parseFloat(rateTwdValue)
+          rateTwdChange = ((curr - prev.rate_twd) / prev.rate_twd) * 100
+        }
+      } catch (_) {
+        // Supabase 失敗不中斷請求
+      }
+    }
 
     res.json({
       shanghai: unwrap(shanghai),
-      rate_twd: unwrap(rate_twd),
+      rate_twd: rateTwdValue,
+      rate_twd_change: rateTwdChange,
       lme: unwrap(lme),
       usd_cny: unwrap(usd_cny),
       gold: unwrap(gold),

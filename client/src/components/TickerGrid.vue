@@ -120,7 +120,7 @@ const cards = [
     getValue: (d) => (d.rate_twd ? parseFloat(d.rate_twd) : null),
     getDecimals: () => 4,
     getSub: () => '即期買入',
-    getChange: () => null, // BOT page only provides current rate, no delta
+    getChange: (d) => d.rate_twd_change ?? null, // 由後端與 Supabase 前一筆歷史記錄計算
   },
   {
     key: 'lme',
