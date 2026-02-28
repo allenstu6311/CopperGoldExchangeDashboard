@@ -11,7 +11,6 @@ const countdown = ref(0)
 const refreshing = ref(false)
 
 const message = useMessage()
-
 const REFRESH_MS = 3 * 60 * 1000
 
 let timer = null
@@ -22,6 +21,7 @@ async function load() {
     error.value = null
     data.value = await getLatest()
     lastUpdated.value = new Date()
+    message.success('行情已更新')
     // 背景同步：比較即時值與資料庫，保留當日最高點；失敗不影響 UI
     compareWithDB().catch(() => {})
   } catch (e) {
