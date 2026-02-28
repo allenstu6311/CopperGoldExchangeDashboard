@@ -54,8 +54,6 @@ async function refresh() {
   startTimers()
   if (error.value) {
     message.error('更新失敗')
-  } else {
-    message.success('行情已更新')
   }
 }
 
