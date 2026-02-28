@@ -1,21 +1,24 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { getLatest } from '../api/index.js'
+import { getLatest, compareWithDB } from '../api/index.js'
 
 const data = ref(null)
 const loading = ref(true)
 const error = ref(null)
 const lastUpdated = ref(null)
+const countdown = ref(0)
 
-const REFRESH_MS = 3 * 60 * 1000 // 5 minutes
+const REFRESH_MS = 3 * 60 * 1000
 
 let timer = null
+let countdownTimer = null
 
 async function load() {
   try {
     error.value = null
     data.value = await getLatest()
     lastUpdated.value = new Date()
+    compareWithDB().catch(() => {})
   } catch (e) {
     error.value = e.message
   } finally {
@@ -23,13 +26,41 @@ async function load() {
   }
 }
 
+function startTimers() {
+  clearInterval(timer)
+  clearInterval(countdownTimer)
+
+  countdown.value = REFRESH_MS / 1000
+
+  timer = setInterval(() => {
+    load()
+    countdown.value = REFRESH_MS / 1000
+  }, REFRESH_MS)
+
+  countdownTimer = setInterval(() => {
+    if (countdown.value > 0) countdown.value--
+  }, 1000)
+}
+
+async function refresh() {
+  await load()
+  startTimers()
+}
+
+function formatCountdown(seconds) {
+  const m = Math.floor(seconds / 60)
+  const s = seconds % 60
+  return `${m}:${String(s).padStart(2, '0')}`
+}
+
 onMounted(() => {
   load()
-  timer = setInterval(load, REFRESH_MS)
+  startTimers()
 })
 
 onUnmounted(() => {
   clearInterval(timer)
+  clearInterval(countdownTimer)
 })
 
 // Parse LME price string (European format: '13.215,00') to number
@@ -126,6 +157,8 @@ const cards = [
       <span v-if="lastUpdated" class="updated-time text-muted mono">
         Updated {{ formatTime(lastUpdated) }}
       </span>
+      <span class="countdown text-muted mono">下次更新 {{ formatCountdown(countdown) }}</span>
+      <button class="refresh-btn mono" @click="refresh">↻ 立即更新</button>
     </div>
 
     <div v-if="loading" class="state-msg">載入中...</div>
@@ -207,6 +240,28 @@ const cards = [
 
 .updated-time {
   font-size: 12px;
+}
+
+.countdown {
+  font-size: 12px;
+  margin-left: auto;
+}
+
+.refresh-btn {
+  font-size: 11px;
+  color: var(--text-secondary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.refresh-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .state-msg {
