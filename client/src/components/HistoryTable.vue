@@ -15,8 +15,9 @@ const paginatedRows = computed(() => {
   return rows.value.slice(start, start + pageSize.value)
 })
 
+
 // 查詢新資料後重置到第一頁
-watch(rows, () => { currentPage.value = 1 })
+watch([rows, pageSize], () => { currentPage.value = 1 })
 
 function isoToday() {
   return new Date().toISOString().slice(0, 10)

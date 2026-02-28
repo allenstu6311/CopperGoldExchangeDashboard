@@ -13,9 +13,6 @@ import HistoryTable from './components/HistoryTable.vue'
           <p class="app-subtitle mono">Copper Gold Exchange Dashboard</p>
         </div>
       </div>
-      <div class="header-right">
-        <span class="header-tag mono">LME · SHFE · GOLD · FX</span>
-      </div>
     </header>
 
     <main>
