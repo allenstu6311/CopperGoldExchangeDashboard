@@ -1,6 +1,6 @@
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
-import { NPagination } from 'naive-ui'
+import { h, ref, computed, watch, onMounted } from 'vue'
+import { NDataTable, NPagination } from 'naive-ui'
 import { getHistory } from '../api/index.js'
 
 const rows = ref([])
@@ -81,7 +81,6 @@ function downloadExcel() {
     ]),
   ]
 
-  // Wrap cells containing commas in quotes
   const escape = (v) => {
     const s = String(v)
     return s.includes(',') ? `"${s}"` : s
@@ -99,6 +98,103 @@ function downloadExcel() {
   a.click()
   URL.revokeObjectURL(url)
 }
+
+// ─── NDataTable 設定 ──────────────────────────────────────────────────────────
+
+// h() render 函式產生的元素不在 template 內，無法套用 scoped attribute
+// 因此使用 inline style 取代 class，避免 scoped 污染問題
+
+const MONO = { fontFamily: "'IBM Plex Mono', monospace" }
+
+const UNIT_STYLE = {
+  fontSize: '14px',
+  color: 'var(--text-muted)',
+  fontWeight: '400',
+}
+
+const BADGE_STYLE = {
+  fontSize: '10px',
+  fontWeight: '600',
+  color: 'var(--accent)',
+  background: 'rgba(232, 168, 56, 0.15)',
+  border: '1px solid rgba(232, 168, 56, 0.3)',
+  borderRadius: '4px',
+  padding: '1px 6px',
+  letterSpacing: '0.06em',
+  marginLeft: '10px',
+  display: 'inline-block',
+  ...MONO,
+}
+
+const rowClassName = (_row, index) => {
+  return index === 0 && currentPage.value === 1 ? 'latest-row' : ''
+}
+
+const columns = [
+  {
+    title: 'Date',
+    key: 'date',
+    align: 'left',
+    render: (row, index) => {
+      const isLatest = index === 0 && currentPage.value === 1
+      return h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } }, [
+        h('span', formatDate(row.date)),
+        isLatest ? h('span', { style: BADGE_STYLE }, 'LATEST') : null,
+      ])
+    },
+    sorter: (a, b) => new Date(b.date) - new Date(a.date),
+  },
+  {
+    key: 'shanghai',
+    align: 'right',
+    title: () => h('span', { style: MONO }, [
+      h('div', 'Shanghai Copper'),
+      h('span', { style: UNIT_STYLE }, '元/噸'),
+    ]),
+    render: (row) => h('span', { style: MONO }, fmt(row.shanghai, 0)),
+    sorter: (a, b) => (b.shanghai || 0) - (a.shanghai || 0),
+  },
+  {
+    key: 'rate_twd',
+    align: 'right',
+    title: () => h('span', { style: MONO }, [
+      h('div', '匯率 TWD/USD'),
+      h('span', { style: UNIT_STYLE }, '台幣/美元'),
+    ]),
+    render: (row) => h('span', { style: MONO }, fmt(row.rate_twd, 4)),
+    sorter: (a, b) => (b.rate_twd || 0) - (a.rate_twd || 0),
+  },
+  {
+    key: 'lme',
+    align: 'right',
+    title: () => h('span', { style: MONO }, [
+      h('div', 'LME Copper'),
+      h('span', { style: UNIT_STYLE }, 'USD/噸'),
+    ]),
+    render: (row) => h('span', { style: MONO }, fmt(row.lme, 2)),
+    sorter: (a, b) => (b.lme || 0) - (a.lme || 0),
+  },
+  {
+    key: 'usd_cny',
+    align: 'right',
+    title: () => h('span', { style: MONO }, [
+      h('div', 'USD:RMB'),
+      h('span', { style: UNIT_STYLE }, 'USD/人民幣'),
+    ]),
+    render: (row) => h('span', { style: MONO }, fmt(row.usd_cny, 4)),
+    sorter: (a, b) => (b.usd_cny || 0) - (a.usd_cny || 0),
+  },
+  {
+    key: 'gold',
+    align: 'right',
+    title: () => h('span', { style: MONO }, [
+      h('div', '國際金價'),
+      h('span', { style: UNIT_STYLE }, 'USD/盎司'),
+    ]),
+    render: (row) => h('span', { style: MONO }, fmt(row.gold, 2)),
+    sorter: (a, b) => (b.gold || 0) - (a.gold || 0),
+  },
+]
 </script>
 
 <template>
@@ -132,38 +228,18 @@ function downloadExcel() {
     <div v-else-if="!loading && rows.length === 0" class="state-msg">無資料</div>
 
     <div class="table-wrap" v-if="rows.length > 0">
-      <table class="history-table">
-        <thead>
-          <tr>
-            <th class="mono">Date</th>
-            <th class="mono">Shanghai Copper<br /><span class="unit">元/噸</span></th>
-            <th class="mono">匯率 TWD/USD<br /><span class="unit">台幣/美元</span></th>
-            <th class="mono">LME Copper<br /><span class="unit">USD/噸</span></th>
-            <th class="mono">USD:RMB</th>
-            <th class="mono">國際金價<br /><span class="unit">USD/盎司</span></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="(row, i) in paginatedRows"
-            :key="row.date"
-            :class="{ latest: i === 0 && currentPage === 1 }"
-          >
-            <td class="mono date-cell">
-              {{ formatDate(row.date) }}
-              <span v-if="i === 0" class="latest-badge mono">LATEST</span>
-            </td>
-            <td class="mono">{{ fmt(row.shanghai, 0) }}</td>
-            <td class="mono">{{ fmt(row.rate_twd, 4) }}</td>
-            <td class="mono">{{ fmt(row.lme, 2) }}</td>
-            <td class="mono">{{ fmt(row.usd_cny, 4) }}</td>
-            <td class="mono">{{ fmt(row.gold, 2) }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <n-data-table
+        :columns="columns"
+        :data="paginatedRows"
+        :row-class-name="rowClassName"
+        :row-key="(row) => row.date"
+        :bordered="false"
+        :single-line="false"
+        :loading="loading"
+        size="small"
+      />
     </div>
-
-    <div v-if="rows.length > pageSize" class="pagination-wrap">
+    <div v-if="rows.length > 0" class="pagination-wrap">
       <n-pagination
         v-model:page="currentPage"
         v-model:page-size="pageSize"
@@ -191,68 +267,6 @@ function downloadExcel() {
   font-size: 18px;
   font-weight: 700;
   color: var(--text-primary);
-}
-
-/* Mock toggle */
-.mock-toggle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  font-size: 11px;
-  color: var(--text-muted);
-  letter-spacing: 0.08em;
-  user-select: none;
-  transition: color 0.2s;
-}
-
-.mock-toggle input {
-  display: none;
-}
-
-.toggle-track {
-  width: 32px;
-  height: 18px;
-  border-radius: 9px;
-  background: var(--border);
-  position: relative;
-  transition: background 0.2s;
-  flex-shrink: 0;
-}
-
-.toggle-thumb {
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--text-muted);
-  transition: transform 0.2s, background 0.2s;
-}
-
-.mock-toggle.active .toggle-track {
-  background: rgba(232, 168, 56, 0.25);
-}
-
-.mock-toggle.active .toggle-thumb {
-  transform: translateX(14px);
-  background: var(--accent);
-}
-
-.mock-toggle.active {
-  color: var(--accent);
-}
-
-.mock-badge {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--accent);
-  background: rgba(232, 168, 56, 0.15);
-  border: 1px solid rgba(232, 168, 56, 0.35);
-  border-radius: 4px;
-  padding: 1px 5px;
-  letter-spacing: 0.06em;
 }
 
 .query-bar {
@@ -345,52 +359,69 @@ function downloadExcel() {
   overflow-x: auto;
   border: 1px solid var(--border);
   border-radius: 10px;
+  overflow: hidden;
 }
 
-.history-table {
-  width: 100%;
-  border-collapse: collapse;
+/* ── NDataTable 樣式覆寫 ─────────────────────────────────────────────────── */
+
+.table-wrap :deep(.n-data-table) {
+  background: transparent;
   font-size: 13px;
 }
 
-.history-table th {
-  background: var(--surface);
-  color: var(--text-secondary);
-  font-size: 11px;
+.table-wrap :deep(.n-data-table-base-table) {
+  background: transparent;
+}
+
+/* Header */
+.table-wrap :deep(.n-data-table-th) {
+  background: var(--surface) !important;
+  color: var(--text-secondary) !important;
+  font-size: 16px;
+  font-family: 'IBM Plex Mono', monospace;
   font-weight: 500;
   letter-spacing: 0.05em;
   padding: 12px 16px;
-  text-align: right;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border) !important;
   white-space: nowrap;
 }
 
-.history-table th:first-child {
-  text-align: left;
-}
-
-.history-table td {
+/* Data cells */
+.table-wrap :deep(.n-data-table-td) {
+  background: transparent !important;
+  color: var(--text-primary) !important;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
   padding: 11px 16px;
-  text-align: right;
-  border-bottom: 1px solid var(--border);
-  color: var(--text-primary);
+  border-bottom: 1px solid var(--border) !important;
   white-space: nowrap;
 }
 
-.history-table td:first-child {
-  text-align: left;
+/* 移除最後一行的底部邊框 */
+.table-wrap :deep(.n-data-table-tr:last-child .n-data-table-td) {
+  border-bottom: none !important;
 }
 
-.history-table tbody tr:last-child td {
-  border-bottom: none;
+/* Row hover */
+.table-wrap :deep(.n-data-table-tr:hover .n-data-table-td) {
+  background: rgba(255, 255, 255, 0.02) !important;
 }
 
-.history-table tbody tr:hover td {
-  background: rgba(255, 255, 255, 0.02);
+/* Latest row highlight */
+.table-wrap :deep(.n-data-table-tr.latest-row .n-data-table-td) {
+  background: var(--accent-dim) !important;
 }
 
-.history-table tbody tr.latest td {
-  background: var(--accent-dim);
+.table-wrap :deep(.n-data-table-th__title){
+  margin-right: 10px;
+}
+
+/* ── Render 函式內的元件樣式（非 scoped，依賴全域 .mono / .unit） ─────────── */
+
+.pagination-wrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
 }
 
 .date-cell {
@@ -408,12 +439,8 @@ function downloadExcel() {
   border-radius: 4px;
   padding: 1px 6px;
   letter-spacing: 0.06em;
-}
-
-.pagination-wrap {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
+  margin-left: 10px;
+  display: inline-block;
 }
 
 .unit {
