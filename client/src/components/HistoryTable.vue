@@ -1,5 +1,5 @@
 <script setup>
-import { h, ref, computed, watch, onMounted } from 'vue'
+import { h, ref, watch, onMounted, computed } from 'vue'
 import { NDataTable, NPagination } from 'naive-ui'
 import { getHistory } from '../api/index.js'
 
@@ -37,6 +37,7 @@ async function fetchHistory() {
   error.value = null
   try {
     rows.value = await getHistory(fromDate.value, toDate.value)
+    latestDate.value = rows.value.reduce((max, r) => (r.date > max ? r.date : max), '')
   } catch (e) {
     error.value = e.message
   } finally {
@@ -127,17 +128,18 @@ const BADGE_STYLE = {
   ...MONO,
 }
 
-const rowClassName = (_row, index) => {
-  return index === 0 && currentPage.value === 1 ? 'latest-row' : ''
-}
+const latestDate = ref('')
+
+const rowClassName = (row) =>
+  row.date === latestDate.value ? 'latest-row' : ''
 
 const columns = [
   {
     title: 'Date',
     key: 'date',
     align: 'left',
-    render: (row, index) => {
-      const isLatest = index === 0 && currentPage.value === 1
+    render: (row) => {
+      const isLatest = row.date === latestDate.value
       return h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } }, [
         h('span', formatDate(row.date)),
         isLatest ? h('span', { style: BADGE_STYLE }, 'LATEST') : null,
