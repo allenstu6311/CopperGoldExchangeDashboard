@@ -251,18 +251,18 @@ const cards = [
 }
 
 .live-label {
-  font-size: 11px;
+  font-size: var(--fs-xs);
   font-weight: 600;
   color: var(--green);
   letter-spacing: 0.1em;
 }
 
 .updated-time {
-  font-size: 12px;
+  font-size: var(--fs-sm);
 }
 
 .countdown {
-  font-size: 12px;
+  font-size: var(--fs-sm);
   margin-left: auto;
 }
 
@@ -308,19 +308,19 @@ const cards = [
 }
 
 .card-label-zh {
-  font-size: 13px;
+  font-size: var(--fs-base);
   color: var(--text-secondary);
   font-weight: 500;
 }
 
 .card-label {
-  font-size: 11px;
+  font-size: var(--fs-xs);
   color: var(--text-muted);
   letter-spacing: 0.05em;
 }
 
 .card-value {
-  font-size: 26px;
+  font-size: var(--fs-xl);
   font-weight: 600;
   color: var(--text-primary);
   letter-spacing: -0.02em;
@@ -336,12 +336,12 @@ const cards = [
 }
 
 .card-unit {
-  font-size: 11px;
+  font-size: var(--fs-xs);
   letter-spacing: 0.04em;
 }
 
 .change-badge {
-  font-size: 11px;
+  font-size: var(--fs-xs);
   font-weight: 600;
   padding: 2px 7px;
   border-radius: 4px;
@@ -358,7 +358,7 @@ const cards = [
 }
 
 .card-sub {
-  font-size: 11px;
+  font-size: var(--fs-xs);
   margin-top: -4px;
 }
 

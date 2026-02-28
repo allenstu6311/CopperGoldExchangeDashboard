@@ -107,13 +107,13 @@ function downloadExcel() {
 const MONO = { fontFamily: "'IBM Plex Mono', monospace" }
 
 const UNIT_STYLE = {
-  fontSize: '14px',
+  fontSize: 'var(--fs-xs)',
   color: 'var(--text-muted)',
   fontWeight: '400',
 }
 
 const BADGE_STYLE = {
-  fontSize: '10px',
+  fontSize: 'var(--fs-2xs)',
   fontWeight: '600',
   color: 'var(--accent)',
   background: 'rgba(232, 168, 56, 0.15)',
@@ -264,7 +264,7 @@ const columns = [
 }
 
 .section-title {
-  font-size: 18px;
+  font-size: var(--fs-lg);
   font-weight: 700;
   color: var(--text-primary);
 }
@@ -284,7 +284,7 @@ const columns = [
 }
 
 .field-label {
-  font-size: 11px;
+  font-size: var(--fs-xs);
   color: var(--text-muted);
   letter-spacing: 0.08em;
 }
@@ -295,7 +295,7 @@ const columns = [
   border-radius: 6px;
   color: var(--text-primary);
   font-family: 'IBM Plex Mono', monospace;
-  font-size: 13px;
+  font-size: var(--fs-base);
   padding: 8px 12px;
   outline: none;
   transition: border-color 0.2s;
@@ -312,7 +312,7 @@ const columns = [
   border-radius: 6px;
   color: #0a0e14;
   cursor: pointer;
-  font-size: 13px;
+  font-size: var(--fs-base);
   font-weight: 600;
   padding: 8px 20px;
   transition: opacity 0.2s;
@@ -334,7 +334,7 @@ const columns = [
   border-radius: 6px;
   color: var(--text-secondary);
   cursor: pointer;
-  font-size: 13px;
+  font-size: var(--fs-base);
   font-weight: 500;
   padding: 8px 16px;
   transition: border-color 0.2s, color 0.2s;
@@ -366,7 +366,7 @@ const columns = [
 
 .table-wrap :deep(.n-data-table) {
   background: transparent;
-  font-size: 13px;
+  font-size: var(--fs-base);
 }
 
 .table-wrap :deep(.n-data-table-base-table) {
@@ -377,7 +377,7 @@ const columns = [
 .table-wrap :deep(.n-data-table-th) {
   background: var(--surface) !important;
   color: var(--text-secondary) !important;
-  font-size: 16px;
+  font-size: var(--fs-md);
   font-family: 'IBM Plex Mono', monospace;
   font-weight: 500;
   letter-spacing: 0.05em;
@@ -391,7 +391,7 @@ const columns = [
   background: transparent !important;
   color: var(--text-primary) !important;
   font-family: 'IBM Plex Mono', monospace;
-  font-size: 13px;
+  font-size: var(--fs-base);
   padding: 11px 16px;
   border-bottom: 1px solid var(--border) !important;
   white-space: nowrap;
