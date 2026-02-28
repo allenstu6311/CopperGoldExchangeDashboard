@@ -1,10 +1,22 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
+import { NPagination } from 'naive-ui'
 import { getHistory } from '../api/index.js'
 
 const rows = ref([])
 const loading = ref(false)
 const error = ref(null)
+
+const currentPage = ref(1)
+const pageSize = ref(10)
+
+const paginatedRows = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  return rows.value.slice(start, start + pageSize.value)
+})
+
+// 查詢新資料後重置到第一頁
+watch(rows, () => { currentPage.value = 1 })
 
 function isoToday() {
   return new Date().toISOString().slice(0, 10)
@@ -133,9 +145,9 @@ function downloadExcel() {
         </thead>
         <tbody>
           <tr
-            v-for="(row, i) in rows"
+            v-for="(row, i) in paginatedRows"
             :key="row.date"
-            :class="{ latest: i === 0 }"
+            :class="{ latest: i === 0 && currentPage === 1 }"
           >
             <td class="mono date-cell">
               {{ formatDate(row.date) }}
@@ -149,6 +161,16 @@ function downloadExcel() {
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div v-if="rows.length > pageSize" class="pagination-wrap">
+      <n-pagination
+        v-model:page="currentPage"
+        v-model:page-size="pageSize"
+        :item-count="rows.length"
+        :page-sizes="[10, 20, 50]"
+        show-size-picker
+      />
     </div>
   </div>
 </template>
@@ -386,6 +408,12 @@ function downloadExcel() {
   border-radius: 4px;
   padding: 1px 6px;
   letter-spacing: 0.06em;
+}
+
+.pagination-wrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
 }
 
 .unit {

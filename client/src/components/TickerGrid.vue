@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { NButton, useMessage } from 'naive-ui'
 import { getLatest, compareWithDB } from '../api/index.js'
 
 const data = ref(null)
@@ -7,6 +8,9 @@ const loading = ref(true)
 const error = ref(null)
 const lastUpdated = ref(null)
 const countdown = ref(0)
+const refreshing = ref(false)
+
+const message = useMessage()
 
 const REFRESH_MS = 3 * 60 * 1000
 
@@ -18,6 +22,7 @@ async function load() {
     error.value = null
     data.value = await getLatest()
     lastUpdated.value = new Date()
+    // 背景同步：比較即時值與資料庫，保留當日最高點；失敗不影響 UI
     compareWithDB().catch(() => {})
   } catch (e) {
     error.value = e.message
@@ -43,8 +48,15 @@ function startTimers() {
 }
 
 async function refresh() {
+  refreshing.value = true
   await load()
+  refreshing.value = false
   startTimers()
+  if (error.value) {
+    message.error('更新失敗')
+  } else {
+    message.success('行情已更新')
+  }
 }
 
 function formatCountdown(seconds) {
@@ -158,7 +170,14 @@ const cards = [
         Updated {{ formatTime(lastUpdated) }}
       </span>
       <span class="countdown text-muted mono">下次更新 {{ formatCountdown(countdown) }}</span>
-      <button class="refresh-btn mono" @click="refresh">↻ 立即更新</button>
+      <n-button
+        size="small"
+        tertiary
+        :loading="refreshing"
+        :disabled="refreshing"
+        @click="refresh"
+        style="font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.05em;"
+      >↻ 即刻刷新</n-button>
     </div>
 
     <div v-if="loading" class="state-msg">載入中...</div>
@@ -247,22 +266,6 @@ const cards = [
   margin-left: auto;
 }
 
-.refresh-btn {
-  font-size: 11px;
-  color: var(--text-secondary);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 4px 10px;
-  cursor: pointer;
-  letter-spacing: 0.05em;
-  transition: border-color 0.15s, color 0.15s;
-}
-
-.refresh-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
 
 .state-msg {
   color: var(--text-secondary);
