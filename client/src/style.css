@@ -1,0 +1,38 @@
+:root {
+  --bg: #0a0e14;
+  --surface: #111620;
+  --border: #1e2736;
+  --accent: #e8a838;
+  --accent-dim: #1e1a0e;
+  --green: #3dd68c;
+  --red: #f25c5c;
+  --text-primary: #e8eaf0;
+  --text-secondary: #6b7a99;
+  --text-muted: #8a9ab8;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: 'Noto Sans TC', sans-serif;
+  min-height: 100vh;
+}
+
+code,
+.mono {
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+#app {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 20px;
+}
