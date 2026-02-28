@@ -22,8 +22,15 @@ async function load() {
     data.value = await getLatest()
     lastUpdated.value = new Date()
     message.success('行情已更新')
-    // 背景同步：比較即時值與資料庫，保留當日最高點；失敗不影響 UI
-    compareWithDB().catch(() => {})
+    // 背景同步：把已解析的數值送往後端，比較並保留當日最高點；失敗不影響 UI
+    const live = {
+      shanghai: data.value.shanghai?.lastprice ? parseFloat(data.value.shanghai.lastprice) : null,
+      rate_twd: data.value.rate_twd            ? parseFloat(data.value.rate_twd)            : null,
+      lme:      data.value.lme?.usd            ? parseLMEPrice(data.value.lme.usd)          : null,
+      usd_cny:  data.value.usd_cny?.price      ?? null,
+      gold:     data.value.gold?.bid           ?? null,
+    }
+    compareWithDB(live).catch(() => {})
   } catch (e) {
     error.value = e.message
   } finally {

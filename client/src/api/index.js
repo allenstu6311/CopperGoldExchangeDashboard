@@ -87,7 +87,7 @@ export function getHistory(from, to) {
   return api.get('/history', { params: { from, to } }).then((r) => r.data)
 }
 
-export function compareWithDB() {
+export function compareWithDB(live) {
   if (mockMode.value) return Promise.resolve()
-  return api.post('/compare').then((r) => r.data)
+  return api.post('/compare', live).then((r) => r.data)
 }

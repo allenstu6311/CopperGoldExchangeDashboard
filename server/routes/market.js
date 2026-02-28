@@ -85,40 +85,11 @@ router.get('/history', async (req, res) => {
   }
 })
 
-// POST /api/market/compare — compare live data with today's DB record and upsert higher values
-router.post('/compare', async (_req, res) => {
+// POST /api/market/compare — compare pre-parsed live values with today's DB record and upsert higher values
+// Body: { shanghai, rate_twd, lme, usd_cny, gold } (all numeric, already parsed by the caller)
+router.post('/compare', async (req, res) => {
   try {
-    // 1. Fetch all live data simultaneously
-    const [shanghaiResult, rateTwdResult, lmeResult, usdCnyResult, goldResult] =
-      await Promise.allSettled([
-        fetchShanghai(),
-        fetchRateTWD(),
-        fetchLME(),
-        fetchUSDCNY(),
-        fetchGold(),
-      ])
-
-    const unwrap = (r) => (r.status === 'fulfilled' ? r.value : null)
-    const shanghaiData = unwrap(shanghaiResult)
-    const rateTwdData  = unwrap(rateTwdResult)
-    const lmeData      = unwrap(lmeResult)
-    const usdCnyData   = unwrap(usdCnyResult)
-    const goldData     = unwrap(goldResult)
-
-    // 2. Parse live values into numeric form (same convention as dailySave.js)
-    const parseLME = (str) => {
-      if (!str) return null
-      // LME uses European format: "9.680,00" → 9680.00
-      return parseFloat(str.replace(/\./g, '').replace(',', '.'))
-    }
-
-    const live = {
-      shanghai: shanghaiData?.lastprice ? parseFloat(shanghaiData.lastprice) : null,
-      rate_twd: rateTwdData             ? parseFloat(rateTwdData)            : null,
-      lme:      lmeData?.usd            ? parseLME(lmeData.usd)              : null,
-      usd_cny:  usdCnyData?.price       ?? null,
-      gold:     goldData?.bid           ?? null,
-    }
+    const live = req.body
 
     const today = new Date().toISOString().slice(0, 10)
     const SELECT_COLS = 'date, shanghai, rate_twd, lme, usd_cny, gold'
