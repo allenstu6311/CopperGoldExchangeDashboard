@@ -94,6 +94,10 @@ function formatTime(d) {
   return d.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })
 }
 
+function openCardUrl(url) {
+  if (url) window.open(url, '_blank', 'noopener,noreferrer')
+}
+
 const cards = [
   {
     key: 'shanghai',
@@ -101,6 +105,7 @@ const cards = [
     labelZh: '上海銅期貨',
     unit: '元/噸',
     highlight: true,
+    url: 'https://www.shfe.com.cn/reports/marketdata/delayedquotes/',
     getValue: (d) => (d.shanghai?.lastprice ? parseFloat(d.shanghai.lastprice) : null),
     getDecimals: () => 0,
     getSub: (d) => d.shanghai?.contractname ?? '',
@@ -117,6 +122,7 @@ const cards = [
     labelZh: '台銀匯率',
     unit: '台幣/美元',
     highlight: false,
+    url: 'https://rate.bot.com.tw/xrt?Lang=zh-TW',
     getValue: (d) => (d.rate_twd ? parseFloat(d.rate_twd) : null),
     getDecimals: () => 4,
     getSub: () => '即期買入',
@@ -128,6 +134,7 @@ const cards = [
     labelZh: 'LME 銅',
     unit: 'USD/噸',
     highlight: false,
+    url: 'https://www.kme.com/en/services/metal-prices/historical/historical-copper-values',
     getValue: (d) => (d.lme?.usd ? parseLMEPrice(d.lme.usd) : null),
     getDecimals: () => 2,
     getSub: (d) => d.lme?.date ?? '',
@@ -139,6 +146,7 @@ const cards = [
     labelZh: '美元/人民幣',
     unit: '美元/人民幣',
     highlight: false,
+    url: 'https://finance.yahoo.com/quote/CNY%3DX/',
     getValue: (d) => d.usd_cny?.price ?? null,
     getDecimals: () => 4,
     getSub: () => 'Yahoo Finance',
@@ -151,6 +159,7 @@ const cards = [
     labelZh: '國際金價',
     unit: 'USD/盎司',
     highlight: false,
+    url: 'https://www.kitco.com/',
     getValue: (d) => d.gold?.bid,
     getDecimals: () => 2,
     getSub: () => 'Kitco',
@@ -188,7 +197,8 @@ const cards = [
         v-for="card in cards"
         :key="card.key"
         class="ticker-card"
-        :class="{ highlight: card.highlight }"
+        :class="{ highlight: card.highlight, clickable: !!card.url }"
+        @click="openCardUrl(card.url)"
       >
         <div class="card-header">
           <span class="card-label-zh">{{ card.labelZh }}</span>
@@ -295,6 +305,14 @@ const cards = [
 
 .ticker-card:hover {
   border-color: #2e3f56;
+}
+
+.ticker-card.clickable {
+  cursor: pointer;
+}
+
+.ticker-card.clickable:hover {
+  border-color: var(--accent);
 }
 
 .ticker-card.highlight {
