@@ -1,6 +1,6 @@
 "use strict";
 
-const { app, BrowserWindow, Menu, dialog } = require("electron");
+const { app, BrowserWindow, Menu, dialog, shell } = require("electron");
 const path = require("path");
 const http = require("http");
 const { pathToFileURL } = require("url");
@@ -60,14 +60,32 @@ function createWindow() {
   win.on("closed", () => {
     win = null;
   });
+
+  // Redirect window.open calls to the system browser
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url);
+    return { action: "deny" };
+  });
 }
 
+autoUpdater.on("update-downloaded", () => {
+  dialog
+    .showMessageBox({
+      type: "info",
+      buttons: ["重啟並更新", "稍後"],
+      defaultId: 0,
+      message: "新版本已就緒",
+      detail: "重啟應用程式後將自動完成更新。",
+    })
+    .then(({ response }) => {
+      if (response === 0) autoUpdater.quitAndInstall();
+    });
+});
+
 app.whenReady().then(async () => {
-  try {
-    await autoUpdater.checkForUpdatesAndNotify();
-  } catch (e) {
+  autoUpdater.checkForUpdates().catch((e) => {
     console.log("Updater failed:", e.message);
-  }
+  });
 
   try {
     await startServer();
