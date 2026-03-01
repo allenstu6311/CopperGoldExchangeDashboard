@@ -1,6 +1,6 @@
 'use strict'
 
-const { app, BrowserWindow, Menu, dialog } = require('electron')
+const { app, BrowserWindow, Menu, dialog, autoUpdater  } = require('electron')
 const path = require('path')
 const http = require('http')
 const { pathToFileURL } = require('url')
@@ -59,6 +59,7 @@ function createWindow() {
 }
 
 app.whenReady().then(async () => {
+  autoUpdater.checkForUpdatesAndNotify();
   try {
     await startServer()
     await waitForServer(3000)

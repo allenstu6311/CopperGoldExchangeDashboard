@@ -12,6 +12,11 @@
     "electron:build": "npm run build && electron-builder"
   },
   "build": {
+    "publish": {
+      "provider": "github",
+      "owner": "allenstu6311",
+      "repo": "CopperGoldExchangeDashboard"
+    },
     "appId": "com.copper.dashboard",
     "productName": "銅金匯率儀表板",
     "files": [
@@ -20,11 +25,17 @@
       "package.json"
     ],
     "extraResources": [
-      { "from": ".env",        "to": ".env" },
-      { "from": "client/dist", "to": "client/dist" }
+      {
+        "from": ".env",
+        "to": ".env"
+      },
+      {
+        "from": "client/dist",
+        "to": "client/dist"
+      }
     ],
     "win": {
-      "target": "portable",
+      "target": "nsis",
       "icon": "logo.ico"
     },
     "asar": true
