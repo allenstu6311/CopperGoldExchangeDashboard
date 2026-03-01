@@ -36,7 +36,8 @@
     ],
     "win": {
       "target": "nsis",
-      "icon": "logo.ico"
+      "icon": "logo.ico",
+      "artifactName": "${name}-setup-${version}.${ext}"
     }
   },
   "dependencies": {

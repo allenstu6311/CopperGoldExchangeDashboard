@@ -82,9 +82,21 @@ autoUpdater.on("update-downloaded", () => {
     });
 });
 
+autoUpdater.on("error", (e) => {
+  dialog.showErrorBox("Updater Error", e.message);
+});
+
+autoUpdater.on("update-available", () => {
+  dialog.showMessageBox({ message: "發現新版本，開始下載..." });
+});
+
+// autoUpdater.on("update-not-available", () => {
+//   dialog.showMessageBox({ message: "目前已是最新版本" });
+// });
+
 app.whenReady().then(async () => {
   autoUpdater.checkForUpdates().catch((e) => {
-    console.log("Updater failed:", e.message);
+    dialog.showErrorBox("Updater Failed", e.message);
   });
 
   try {
