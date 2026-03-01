@@ -75,12 +75,19 @@ Mock 模式下，即時行情與歷史查詢都會回傳本地假資料（含隨
 
 ## 生產建置
 
+### 以 Electron 視窗開啟（開發驗證用）
+
 ```bash
-npm run build   # 建置前端至 client/dist/
-npm start       # 啟動 Express 伺服器（同時 serve 前端）
+npm run electron:dev   # 建置前端 + 以 Electron 開啟視窗
 ```
 
-伺服器預設監聽 `PORT=3000`，可透過 `.env` 調整。
+### 打包成 Windows 可攜式執行檔
+
+```bash
+npm run electron:build   # 建置前端 + 打包為 .exe
+```
+
+打包完成後，執行檔位於 `dist/` 目錄，輸出為 Windows Portable（單一 `.exe`，無需安裝）。
 
 ---
 
@@ -89,9 +96,10 @@ npm start       # 啟動 Express 伺服器（同時 serve 前端）
 ```
 copper-dashboard/
 ├── .env.example              # 環境變數範本
-├── render.yaml               # Render 部署設定
 ├── supabase_schema.sql       # 資料庫 Schema
-├── package.json              # 根專案（後端 + 建置指令）
+├── package.json              # 根專案（後端 + 建置指令 + electron-builder 設定）
+├── electron/
+│   └── main.cjs              # Electron 主程序：啟動 Express、等待伺服器、開視窗
 │
 ├── server/
 │   ├── index.js              # Express 主程式，提供 API 與靜態檔案
@@ -184,16 +192,34 @@ copper-dashboard/
 
 ---
 
-## 部署到 Render
+## 打包成執行檔
 
-專案根目錄已包含 `render.yaml`，連接 GitHub repo 後可直接自動部署。
+本專案使用 **Electron** 封裝成 Windows 可攜式應用程式（Portable `.exe`），不需安裝、雙擊即可執行。
 
-需在 Render Dashboard 手動設定兩個 Environment Variables（`render.yaml` 中標記 `sync: false`）：
+### 打包流程
 
-| 變數名稱 | 值 |
-|---------|---|
-| `SUPABASE_URL` | Supabase 專案 URL |
-| `SUPABASE_ANON_KEY` | Supabase anon 公鑰 |
+```bash
+npm run electron:build
+```
 
-建置指令：`npm install && npm run build`
-啟動指令：`node server/index.js`
+此指令會依序執行：
+1. `npm run build` — 將 Vue 前端建置至 `client/dist/`
+2. `electron-builder` — 將下列內容打包成單一 `.exe`：
+   - `electron/main.cjs`（Electron 主程序）
+   - `server/`（Express API 伺服器）
+   - `client/dist/`（前端靜態檔，作為 extraResources）
+   - `.env`（Supabase 憑證，作為 extraResources）
+
+輸出檔案位於 `dist/` 目錄。
+
+### 執行時行為
+
+啟動後，Electron 主程序會：
+1. 讀取 `.env`（打包版位於 `resources/.env`）
+2. 動態載入並啟動 Express 伺服器（port 3000）
+3. 等待伺服器就緒後，開啟 `http://localhost:3000` 視窗
+
+### 注意事項
+
+- 打包前請確認根目錄有 `.env` 並填入正確的 Supabase 憑證，該檔案會被嵌入執行檔的 resources 中
+- 打包設定位於 [package.json](package.json) 的 `"build"` 欄位

@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install --save-dev electron electron-builder)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\user\\Desktop\\code\\project\\copper-dashboard"
+    ]
+  }
+}

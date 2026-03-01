@@ -18,7 +18,7 @@ app.use(express.json())
 app.use('/api/market', marketRouter)
 
 // Serve Vue build
-const distPath = path.join(__dirname, '../client/dist')
+const distPath = process.env.STATIC_PATH || path.join(__dirname, '../client/dist')
 app.use(express.static(distPath))
 app.get('*', (req, res) => {
   res.sendFile(path.join(distPath, 'index.html'))

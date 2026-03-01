@@ -2,11 +2,32 @@
   "name": "copper-gold-exchange-dashboard",
   "version": "1.0.0",
   "type": "module",
+  "main": "electron/main.cjs",
   "scripts": {
     "build": "cd client && npm install && npm run build",
     "start": "node server/index.js",
     "dev:server": "nodemon server/index.js",
-    "dev:client": "cd client && npm run dev"
+    "dev:client": "cd client && npm run dev",
+    "electron:dev": "npm run build && electron .",
+    "electron:build": "npm run build && electron-builder"
+  },
+  "build": {
+    "appId": "com.copper.dashboard",
+    "productName": "銅金匯率儀表板",
+    "files": [
+      "electron/**/*",
+      "server/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      { "from": ".env",        "to": ".env" },
+      { "from": "client/dist", "to": "client/dist" }
+    ],
+    "win": {
+      "target": "portable",
+      "icon": "logo.ico"
+    },
+    "asar": true
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.3",
@@ -16,6 +37,8 @@
     "express": "^4.18.3"
   },
   "devDependencies": {
+    "electron": "^40.6.1",
+    "electron-builder": "^26.8.1",
     "nodemon": "^3.1.0"
   }
 }
